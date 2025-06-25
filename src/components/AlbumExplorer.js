@@ -676,12 +676,46 @@ export default function AlbumExplorer() {
                 <img src={coverArt} alt={`${currentAlbum.title} cover`} className={styles.albumCover} />
               )}
               
+              {!headerPlayer && (
+                <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                  <a 
+                    href={MusicBrainzService.generateSpotifyLink(currentAlbum.title, artistName, currentAlbum.spotifyRelease || currentAlbum)}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-block',
+                      background: '#1db954',
+                      color: 'white',
+                      padding: '12px 24px',
+                      textDecoration: 'none',
+                      borderRadius: '25px',
+                      fontWeight: 'bold',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseOver={(e) => e.target.style.background = '#1ed760'}
+                    onMouseOut={(e) => e.target.style.background = '#1db954'}
+                  >
+                    🎵 Stream on Spotify
+                  </a>
+                </div>
+              )}
+              
               <div className={styles.musiciansSection}>
                 <h3>Musicians on this album:</h3>
                 <ul className={styles.musiciansList}>
                   {musicians.map((musician, index) => (
                     <li key={index} className={styles.musician}>
-                      <div className={styles.musicianName}>{musician.name}</div>
+                      <div 
+                        className={styles.musicianName}
+                        onClick={() => {
+                          setArtistName(musician.name);
+                          setAlbumTitle('');
+                          showArtistDiscography(musician.name);
+                        }}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        {musician.name}
+                      </div>
                       {musician.role && (
                         <div className={styles.musicianRole}>{musician.role}</div>
                       )}
