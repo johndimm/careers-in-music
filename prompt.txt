@@ -1,0 +1,27 @@
+Careers in Music
+
+I want to use the musicbrainz api as a way to navigate a spotify client.
+
+Given an album title and artist, 
+
+  - display a link to spotify
+  - list all the musicians on the album
+  - find the album each member did before and after
+  - display spotify links to the previous album in the left margin
+  - display links to the next album in the right margin
+  - display album covers when possible
+  - display musician photos when possible
+
+Musicbrainz API is here:
+
+  https://musicbrainz.org/doc/MusicBrainz_API
+
+Example query (no credentials needed)
+
+curl "https://musicbrainz.org/ws/2/artist?query=nirvana&fmt=json"
+
+Example link to spotify (no credentials needed)
+
+https://open.spotify.com/album/1weenld61qoidwYuZ1GESA
+
+
