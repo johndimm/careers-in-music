@@ -661,9 +661,6 @@ export default function AlbumExplorer() {
                     <div className={styles.albumDate}>{formatReleaseDate(album.displayDate || album.date)}</div>
                   </div>
                 </div>
-                <a href={album.spotifyLink} target="_blank" rel="noopener noreferrer" className={styles.spotifyMini}>
-                  🎵
-                </a>
               </div>
             ))}
           </div>
@@ -748,9 +745,6 @@ export default function AlbumExplorer() {
                     <div className={styles.albumDate}>{formatReleaseDate(album.displayDate || album.date)}</div>
                   </div>
                 </div>
-                <a href={album.spotifyLink} target="_blank" rel="noopener noreferrer" className={styles.spotifyMini}>
-                  🎵
-                </a>
               </div>
             ))}
           </div>
