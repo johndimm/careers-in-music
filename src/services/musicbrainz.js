@@ -1,4 +1,4 @@
-const MUSICBRAINZ_BASE_URL = 'https://musicbrainz.org/ws/2';
+const MUSICBRAINZ_PROXY_URL = '/api/musicbrainz';
 
 // Format MusicBrainz dates nicely
 const formatReleaseDate = (dateString) => {
@@ -28,25 +28,23 @@ const formatReleaseDate = (dateString) => {
   return dateString; // Fallback
 };
 
-// Rate limiting helper
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-let lastRequestTime = 0;
-
-const rateLimitedFetch = async (url) => {
-  const now = Date.now();
-  const timeSinceLastRequest = now - lastRequestTime;
+// Helper function to build proxy URL
+const buildProxyUrl = (endpoint, params = {}) => {
+  const url = new URL(MUSICBRAINZ_PROXY_URL, window.location.origin);
+  url.searchParams.append('path', endpoint);
   
-  // MusicBrainz requests a minimum of 1 second between requests
-  if (timeSinceLastRequest < 1200) {
-    await sleep(1200 - timeSinceLastRequest);
-  }
-  
-  lastRequestTime = Date.now();
-  return fetch(url, {
-    headers: {
-      'User-Agent': 'CareersInMusic/1.0 (careers-in-music-app)'
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      url.searchParams.append(key, value);
     }
   });
+  
+  return url.toString();
+};
+
+const rateLimitedFetch = async (endpoint, params = {}) => {
+  const url = buildProxyUrl(endpoint, params);
+  return fetch(url);
 };
 
 export { formatReleaseDate };
@@ -54,9 +52,11 @@ export { formatReleaseDate };
 export class MusicBrainzService {
   static async searchArtist(artistName) {
     try {
-      const response = await rateLimitedFetch(
-        `${MUSICBRAINZ_BASE_URL}/artist?query=${encodeURIComponent(artistName)}&fmt=json&limit=10`
-      );
+      const response = await rateLimitedFetch('artist', {
+        query: artistName,
+        fmt: 'json',
+        limit: '10'
+      });
       const data = await response.json();
       return data.artists || [];
     } catch (error) {
@@ -68,9 +68,12 @@ export class MusicBrainzService {
   static async searchReleaseByTitle(title) {
     try {
       const query = `release:"${title}"`;
-      const response = await rateLimitedFetch(
-        `${MUSICBRAINZ_BASE_URL}/release?query=${encodeURIComponent(query)}&fmt=json&limit=50&inc=artist-credits`
-      );
+      const response = await rateLimitedFetch('release', {
+        query: query,
+        fmt: 'json',
+        limit: '50',
+        inc: 'artist-credits'
+      });
       const data = await response.json();
       
       if (data.releases && data.releases.length > 0) {
@@ -109,9 +112,12 @@ export class MusicBrainzService {
   static async searchRelease(albumTitle, artistName) {
     try {
       const query = `release:"${albumTitle}" AND artist:"${artistName}"`;
-      const response = await rateLimitedFetch(
-        `${MUSICBRAINZ_BASE_URL}/release?query=${encodeURIComponent(query)}&fmt=json&limit=20&inc=artist-credits`
-      );
+      const response = await rateLimitedFetch('release', {
+        query: query,
+        fmt: 'json',
+        limit: '20',
+        inc: 'artist-credits'
+      });
       const data = await response.json();
       
       if (data.releases && data.releases.length > 0) {
@@ -149,9 +155,10 @@ export class MusicBrainzService {
 
   static async getReleaseDetails(releaseId) {
     try {
-      const response = await rateLimitedFetch(
-        `${MUSICBRAINZ_BASE_URL}/release/${releaseId}?fmt=json&inc=artist-credits+recordings+release-groups+url-rels`
-      );
+      const response = await rateLimitedFetch(`release/${releaseId}`, {
+        fmt: 'json',
+        inc: 'artist-credits+recordings+release-groups+url-rels'
+      });
       const data = await response.json();
       return data;
     } catch (error) {
@@ -162,9 +169,14 @@ export class MusicBrainzService {
 
   static async getArtistReleases(artistId) {
     try {
-      const response = await rateLimitedFetch(
-        `${MUSICBRAINZ_BASE_URL}/release?artist=${artistId}&fmt=json&limit=100&inc=release-groups&type=album&status=official`
-      );
+      const response = await rateLimitedFetch('release', {
+        artist: artistId,
+        fmt: 'json',
+        limit: '100',
+        inc: 'release-groups',
+        type: 'album',
+        status: 'official'
+      });
       const data = await response.json();
       
       // Filter to get original releases, not reissues
@@ -190,9 +202,10 @@ export class MusicBrainzService {
 
   static async getReleaseRecordings(releaseId) {
     try {
-      const response = await rateLimitedFetch(
-        `${MUSICBRAINZ_BASE_URL}/release/${releaseId}?fmt=json&inc=recordings+artist-credits`
-      );
+      const response = await rateLimitedFetch(`release/${releaseId}`, {
+        fmt: 'json',
+        inc: 'recordings+artist-credits'
+      });
       const data = await response.json();
       return data.media ? data.media.flatMap(medium => medium.tracks || []) : [];
     } catch (error) {
@@ -203,9 +216,10 @@ export class MusicBrainzService {
 
   static async getRecordingDetails(recordingId) {
     try {
-      const response = await rateLimitedFetch(
-        `${MUSICBRAINZ_BASE_URL}/recording/${recordingId}?fmt=json&inc=artist-credits+artist-rels+work-rels`
-      );
+      const response = await rateLimitedFetch(`recording/${recordingId}`, {
+        fmt: 'json',
+        inc: 'artist-credits+artist-rels+work-rels'
+      });
       const data = await response.json();
       return data;
     } catch (error) {
@@ -216,9 +230,10 @@ export class MusicBrainzService {
 
   static async getReleaseRelationships(releaseId) {
     try {
-      const response = await rateLimitedFetch(
-        `${MUSICBRAINZ_BASE_URL}/release/${releaseId}?fmt=json&inc=artist-rels`
-      );
+      const response = await rateLimitedFetch(`release/${releaseId}`, {
+        fmt: 'json',
+        inc: 'artist-rels'
+      });
       const data = await response.json();
       return data.relations || [];
     } catch (error) {
