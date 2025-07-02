@@ -1,5 +1,5 @@
 import Head from "next/head";
-import AlbumExplorer from "../components/AlbumExplorer";
+import AlbumExplorer from "../src/components/AlbumExplorer";
 
 export default function Home() {
   return (
